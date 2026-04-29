@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAKIRI — docs</title>
+  <style>
+    :root {
+      --bg: #020204;
+      --bg-soft: #08080c;
+      --text: #eaf2ff;
+      --text-dim: rgba(205, 220, 245, 0.62);
+      --text-faint: rgba(180, 195, 220, 0.38);
+      --line: rgba(120, 150, 200, 0.14);
+      --glow: #9fc4ff;
+      --glow-soft: rgba(150, 190, 255, 0.32);
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 300;
+      font-size: 15px;
+      line-height: 1.7;
+      letter-spacing: 0.01em;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(90, 120, 180, 0.10), transparent 30%),
+        linear-gradient(180deg, #030305 0%, #000 100%);
+    }
+
+    a { color: var(--glow); text-decoration: none; }
+    a:hover { color: #fff; }
+
+    code, pre, .mono { font-family: var(--mono); }
+
+    /* top bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      background: rgba(2, 2, 4, 0.72);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text);
+    }
+
+    .star {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      animation: starFloat 6s ease-in-out infinite;
+    }
+    .star-halo {
+      position: absolute;
+      inset: -30%;
+      background: radial-gradient(circle at center,
+        rgba(220, 235, 255, 0.40) 0%,
+        rgba(159, 196, 255, 0.18) 22%,
+        transparent 60%);
+      filter: blur(1.5px);
+      animation: haloBreath 4.2s ease-in-out infinite;
+    }
+    .star-ray {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .star-ray.h {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(220,235,255,0.85) 45%, #fff 50%, rgba(220,235,255,0.85) 55%, transparent);
+      box-shadow: 0 0 4px #fff, 0 0 10px rgba(190, 215, 255, 0.7);
+    }
+    .star-ray.v {
+      width: 1px; height: 100%;
+      background: linear-gradient(180deg, transparent, rgba(220,235,255,0.85) 45%, #fff 50%, rgba(220,235,255,0.85) 55%, transparent);
+      box-shadow: 0 0 4px #fff, 0 0 10px rgba(190, 215, 255, 0.7);
+    }
+    .star-core {
+      position: relative;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 4px #fff, 0 0 10px rgba(220, 235, 255, 0.9), 0 0 18px rgba(159, 196, 255, 0.6);
+      animation: coreSparkle 3.2s ease-in-out infinite;
+    }
+
+    @keyframes starFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-2px); }
+    }
+    @keyframes haloBreath {
+      0%, 100% { opacity: 0.7; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.10); }
+    }
+    @keyframes coreSparkle {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.25); box-shadow: 0 0 6px #fff, 0 0 14px rgba(225, 240, 255, 1), 0 0 26px rgba(170, 205, 255, 0.8); }
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      padding-left: 0.42em;
+      color: var(--text);
+    }
+
+    .topnav {
+      display: flex;
+      gap: 24px;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: lowercase;
+    }
+
+    .topnav a {
+      color: var(--text-dim);
+      position: relative;
+      padding: 4px 0;
+      transition: color 0.3s ease;
+    }
+    .topnav a::after {
+      content: "";
+      position: absolute;
+      left: 50%; bottom: 0;
+      transform: translateX(-50%);
+      width: 0; height: 1px;
+      background: var(--glow);
+      box-shadow: 0 0 8px var(--glow);
+      transition: width 0.35s ease;
+    }
+    .topnav a:hover { color: #fff; }
+    .topnav a:hover::after { width: 100%; }
+    .topnav a[aria-current="page"] { color: var(--text); }
+    .topnav a[aria-current="page"]::after { width: 100%; opacity: 0.6; }
+
+    /* layout */
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 48px 32px 96px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 56px;
+    }
+
+    /* sidebar */
+    aside.toc {
+      position: sticky;
+      top: 88px;
+      align-self: start;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .toc-title {
+      font-size: 10px;
+      letter-spacing: 0.36em;
+      text-transform: lowercase;
+      color: var(--text-faint);
+      margin: 0 0 16px;
+    }
+
+    .toc ul { list-style: none; margin: 0; padding: 0; }
+    .toc li { margin: 0; }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      border-left: 1px solid transparent;
+      padding-left: 12px;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .toc a:hover { color: var(--text); border-left-color: var(--glow-soft); }
+    .toc a.active { color: var(--text); border-left-color: var(--glow); }
+
+    /* content */
+    main.content { min-width: 0; }
+
+    .lede {
+      font-size: 13px;
+      letter-spacing: 0.32em;
+      text-transform: lowercase;
+      color: var(--text-faint);
+      margin: 0 0 8px;
+    }
+
+    h1.page-title {
+      margin: 0 0 32px;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 300;
+      letter-spacing: 0.32em;
+      padding-left: 0.32em;
+      text-shadow: 0 0 10px rgba(205, 225, 255, 0.30), 0 0 22px rgba(100, 155, 255, 0.18);
+    }
+
+    section {
+      padding: 32px 0;
+      border-top: 1px solid var(--line);
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    section.in-view { opacity: 1; transform: translateY(0); }
+    section:first-of-type { border-top: 0; padding-top: 0; }
+
+    .lede, h1.page-title, .badges {
+      animation: fadeUp 1s ease-out both;
+    }
+    h1.page-title { animation-delay: 0.1s; }
+    .badges { animation-delay: 0.25s; }
+
+    @keyframes fadeUp {
+      0%   { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    pre, table {
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    pre:hover {
+      border-color: rgba(159, 196, 255, 0.32);
+      box-shadow: 0 0 24px rgba(120, 160, 220, 0.10);
+    }
+
+    .toc a {
+      transition: color 0.25s ease, border-color 0.25s ease, padding-left 0.25s ease;
+    }
+    .toc a.active { padding-left: 16px; }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: lowercase;
+      color: var(--text);
+    }
+
+    h3 {
+      margin: 28px 0 10px;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      color: var(--text);
+    }
+
+    p { margin: 0 0 14px; color: var(--text-dim); }
+
+    ul.list, ol.list { margin: 0 0 14px; padding-left: 20px; color: var(--text-dim); }
+    ul.list li, ol.list li { margin: 4px 0; }
+
+    pre {
+      margin: 14px 0;
+      padding: 18px 20px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #cfe1ff;
+    }
+
+    code.inline {
+      padding: 1px 6px;
+      background: rgba(120, 150, 200, 0.10);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-size: 12.5px;
+      color: #cfe1ff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text-dim);
+    }
+
+    th {
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      color: var(--text-faint);
+      font-size: 11px;
+    }
+
+    td.center, th.center { text-align: center; }
+    td code { font-family: var(--mono); font-size: 12px; color: #cfe1ff; }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 22px;
+    }
+    .badge {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: lowercase;
+      padding: 4px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text-dim);
+    }
+
+    dl.glossary { margin: 0; }
+    dl.glossary dt {
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      margin-top: 14px;
+    }
+    dl.glossary dd {
+      margin: 4px 0 0;
+      color: var(--text-dim);
+    }
+
+    .footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      font-size: 11px;
+      letter-spacing: 0.32em;
+      text-transform: lowercase;
+      color: var(--text-faint);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* mobile */
+    @media (max-width: 860px) {
+      .page { grid-template-columns: 1fr; gap: 24px; padding: 32px 20px 64px; }
+      aside.toc { position: static; max-height: none; padding: 0; }
+      .topnav { gap: 16px; font-size: 11px; }
+      .topbar { padding: 14px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .star, .star-halo, .star-core, section,
+      .lede, h1.page-title, .badges {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="back to home">
+    <span class="star" aria-hidden="true">
+      <span class="star-halo"></span>
+      <span class="star-ray h"></span>
+      <span class="star-ray v"></span>
+      <span class="star-core"></span>
+    </span>
+    <span class="brand-name">HAKIRI</span>
+  </a>
+  <nav class="topnav" aria-label="top">
+    <a href="index.html">home</a>
+    <a href="docs.html" aria-current="page">docs</a>
+    <a href="https://github.com/hakiriagent/hakiri" target="_blank" rel="noreferrer">github</a>
+  </nav>
+</header>
+
+<div class="page">
+  <aside class="toc" aria-label="table of contents">
+    <p class="toc-title">contents</p>
+    <ul>
+      <li><a href="#overview">overview</a></li>
+      <li><a href="#how-it-works">how it works</a></li>
+      <li><a href="#supported">supported</a></li>
+      <li><a href="#heuristics">heuristics</a></li>
+      <li><a href="#quickstart">quickstart</a></li>
+      <li><a href="#cli">cli reference</a></li>
+      <li><a href="#architecture">architecture</a></li>
+      <li><a href="#pipeline">pipeline layers</a></li>
+      <li><a href="#glossary">glossary</a></li>
+      <li><a href="#roadmap">roadmap</a></li>
+      <li><a href="#contributing">contributing</a></li>
+    </ul>
+  </aside>
+
+  <main class="content">
+
+    <p class="lede">ethereum mev forensics agent</p>
+    <h1 class="page-title">docs</h1>
+
+    <div class="badges">
+      <span class="badge">read-only</span>
+      <span class="badge">python 3.9+</span>
+      <span class="badge">rust stable</span>
+      <span class="badge">mit</span>
+      <span class="badge">ethereum mainnet</span>
+    </div>
+
+    <section id="overview">
+      <h2>overview</h2>
+      <p>hakiri watches every block on ethereum mainnet, decodes the swap logs, and reconstructs bundles. it classifies the events — sandwich, jit, backrun, liquidation, atomic arb — attributes builders and known searchers, and emits a verdict per event with a confidence in <code class="inline">[0.0, 0.95]</code>.</p>
+      <p>detector, not oracle. read-only by design. no wallet, no signer, no executor, no trading. anyone forking to build a sniper does so in their own repo.</p>
+    </section>
+
+    <section id="how-it-works">
+      <h2>how it works</h2>
+      <p>a pipeline of small, independent layers. you can swap any layer without touching the others. the contract between layers is the <code class="inline">Event</code> dataclass in <code class="inline">src/hakiri/core/types.py</code>.</p>
+<pre>   pending mempool                  finalized blocks
+        │                                  │
+        ▼                                  ▼
+  ┌──────────────┐                  ┌──────────────┐
+  │ ingest-rs    │                  │ trace_block  │
+  │ ws subscribe │                  │ debug_trace  │
+  └──────┬───────┘                  └──────┬───────┘
+         │                                 │
+         └──────────────┬──────────────────┘
+                        ▼
+                ┌───────────────┐
+                │ decode  v2/v3 │   uniswap, sushi, balancer pools
+                └──────┬────────┘
+                       ▼
+                ┌──────────────┐
+                │ classify     │   SAND-01, BACK-01, JIT-01, ARB-01
+                └──────┬───────┘
+                       ▼
+                ┌──────────────┐
+                │ score        │   rule-based, capped at 0.95
+                └──────┬───────┘
+                       ▼
+                ┌──────────────┐
+                │ ai filter    │   optional. only reviews edge cases
+                └──────┬───────┘
+                       ▼
+                ┌──────────────┐
+                │ output sinks │   stdout · jsonl · webhook
+                └──────────────┘</pre>
+    </section>
+
+    <section id="supported">
+      <h2>supported</h2>
+      <table>
+        <thead><tr><th>target</th><th class="center">status</th></tr></thead>
+        <tbody>
+          <tr><td>ethereum mainnet</td><td class="center">primary</td></tr>
+          <tr><td>uniswap v2 swap logs</td><td class="center">primary</td></tr>
+          <tr><td>uniswap v3 swap logs</td><td class="center">primary</td></tr>
+          <tr><td>sushiswap v2 (alias)</td><td class="center">primary</td></tr>
+          <tr><td>flashbots relay</td><td class="center">primary</td></tr>
+          <tr><td>ultrasound relay</td><td class="center">primary</td></tr>
+          <tr><td>balancer v2 vault</td><td class="center">low coverage</td></tr>
+          <tr><td>curve pools</td><td class="center">low coverage</td></tr>
+          <tr><td>L2: base, arbitrum</td><td class="center">planned</td></tr>
+          <tr><td>reth <code>mev</code> namespace</td><td class="center">planned</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="heuristics">
+      <h2>detection heuristics</h2>
+      <p>each rule has a numbered id used in <code class="inline">event.notes</code> so you can trace what fired. new rules ship with both a positive and a negative fixture or they do not get merged.</p>
+
+      <table>
+        <thead><tr><th>id</th><th>what it catches</th><th class="center">shipped in</th></tr></thead>
+        <tbody>
+          <tr><td><code>SAND-01</code></td><td>classic sandwich: front + victim + back same pool, opposite directions</td><td class="center">v0.1</td></tr>
+          <tr><td><code>BACK-01</code></td><td>one-step backrun arb against a user swap</td><td class="center">v0.1</td></tr>
+          <tr><td><code>JIT-01</code></td><td>just-in-time liquidity add+remove around a victim swap</td><td class="center">v0.2</td></tr>
+          <tr><td><code>ARB-01</code></td><td>atomic multi-hop arb across 3+ pools in a single tx</td><td class="center">v0.2</td></tr>
+          <tr><td><code>LIQ-01</code></td><td>aave/compound liquidation w/ priority manipulation</td><td class="center">v0.3</td></tr>
+          <tr><td><code>ORACLE-01</code></td><td>sandwich-style prep around an oracle update tx</td><td class="center">v0.3</td></tr>
+        </tbody>
+      </table>
+
+      <h3>SAND-01 — classic sandwich</h3>
+      <p>three swaps on the same pool: a front-run by a searcher, a victim swap, a back-run by the same searcher. front and back run in opposite directions.</p>
+      <ul class="list">
+        <li><code class="inline">front.pool == victim.pool == back.pool</code></li>
+        <li><code class="inline">front.sender == back.sender != victim.sender</code></li>
+        <li><code class="inline">front.token_in == victim.token_in</code> and <code class="inline">front.token_out == victim.token_out</code></li>
+        <li><code class="inline">back.token_in == victim.token_out</code> and <code class="inline">back.token_out == victim.token_in</code></li>
+        <li><code class="inline">front.tx_index &lt; victim.tx_index &lt; back.tx_index</code></li>
+      </ul>
+      <p>scoring: base <code class="inline">0.70</code>. coinbase-transfer raises by <code class="inline">+0.10</code>. presence of a victim record raises by <code class="inline">+0.05</code>.</p>
+
+      <h3>BACK-01 — one-step backrun</h3>
+      <p>two consecutive swaps on the same pool by different senders, same direction. the second swap is treated as an arb candidate against the first.</p>
+      <ul class="list">
+        <li><code class="inline">a.pool == b.pool</code></li>
+        <li><code class="inline">a.sender != b.sender</code></li>
+        <li><code class="inline">a.token_in == b.token_in</code> and <code class="inline">a.token_out == b.token_out</code></li>
+        <li><code class="inline">a.tx_index + 1 == b.tx_index</code></li>
+      </ul>
+      <p>scoring: base <code class="inline">0.50</code>. coinbase-transfer raises by <code class="inline">+0.10</code>.</p>
+
+      <h3>JIT-01 — just-in-time liquidity</h3>
+      <p>uniswap v3 only. a position is opened (mint) and closed (burn) in the same block, surrounding a victim swap. the searcher captures fees from the victim and rebalances out before the block ends.</p>
+
+      <h3>ARB-01 — atomic multi-hop arb</h3>
+      <p>a single transaction touches three or more pools and ends with a profit denominated in the input token. typical on stable triangles (<code class="inline">weth → usdc → wbtc → weth</code>).</p>
+
+      <h3>LIQ-01 — liquidation with priority manipulation</h3>
+      <p>aave or compound liquidation where the searcher front-runs the <code class="inline">liquidationCall</code> with a price-impact swap that pushes the victim past threshold.</p>
+
+      <h3>ORACLE-01 — oracle-update sandwich</h3>
+      <p>same shape as SAND-01, but the victim is an oracle-update transaction. the searcher positions before the update lands and exits after.</p>
+
+      <h3>why each rule has a numbered id</h3>
+      <p>users get a verdict; auditors need a reason. quoting a rule id in a forum post or a postmortem is more useful than re-explaining the heuristic each time.</p>
+    </section>
+
+    <section id="quickstart">
+      <h2>quickstart</h2>
+      <p>requires python 3.9+ and rust stable.</p>
+<pre>git clone https://github.com/hakiriagent/hakiri.git
+cd hakiri
+
+# install python package + dev deps
+make install
+
+# build the rust ingest crate
+cd ingest-rs && cargo build --release && cd ..
+
+# run an offline demo (zero network)
+hakiri demo investigate
+
+# run the live scanner against your rpc
+cp .env.example .env
+$EDITOR .env   # set HAKIRI_WS_URL or HAKIRI_HTTP_URL
+hakiri scan</pre>
+      <p>no rpc? <code class="inline">hakiri demo scan</code> shows the full pipeline against synthetic fixtures.</p>
+    </section>
+
+    <section id="cli">
+      <h2>cli reference</h2>
+<pre>hakiri version                    # version + active config
+hakiri scan                       # live mempool + block scan
+hakiri scan --once                # one block then exit (smoke test)
+hakiri investigate &lt;tx|block&gt;     # walk the pipeline on a specific target
+
+hakiri demo scan                  # canned scan against a synthetic block
+hakiri demo investigate           # full pipeline trace, prints every step
+hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
+
+      <h3>example output — <code>hakiri demo investigate</code></h3>
+<pre>─────────────────── step 1. decoded swaps ────────────────────
+  block 21000000 idx 0  sender 0xa69BabE...  pool 0x88e6A0c2...  in 8000000000000000000  out 24000000000
+  block 21000000 idx 1  sender 0xCAFE8888...  pool 0x88e6A0c2...  in 2000000000000000000  out 5950000000
+  block 21000000 idx 2  sender 0xa69BabE...  pool 0x88e6A0c2...  in 24500000000  out 8300000000000000
+
+─────────────────── step 2. classifier rules ─────────────────
+  rules fired: ['SAND-01']
+  block verdict: likely
+  events found:  1
+
+─────────────────── step 3. score per event ─────────────────
+  sandwich block 21000000
+    base[sandwich]=0.70
+    coinbase_transfer&gt;0:+0.10
+    bundle.txs&gt;=2:+0.05
+    victims_present:+0.05
+    -&gt; verdict=confirmed conf=0.900
+─────────────────────── done ────────────────────────────────</pre>
+    </section>
+
+    <section id="architecture">
+      <h2>architecture</h2>
+<pre>hakiri/
+├── src/hakiri/                    python package
+│   ├── core/                      types · classify · score
+│   ├── decode/                    uniswap v2/v3 + router labels
+│   ├── enrich/                    builder · searcher · coinbase transfer
+│   ├── ingest/                    rpc + mempool + trace stubs (rust later)
+│   ├── output/                    stdout · jsonl · webhook
+│   ├── ai/                        optional rule reviewer
+│   ├── demo/                      offline scripted demos
+│   └── cli.py                     typer entrypoint
+├── ingest-rs/                     low-level ingest crate (rust)
+│   └── src/ {mempool,bundle,trace}.rs
+├── tests/                         pytest suite
+└── docs/                          architecture · heuristics · glossary</pre>
+
+      <h3>zones &amp; maintainers</h3>
+      <table>
+        <thead><tr><th>zone</th><th>language</th><th>maintainer</th></tr></thead>
+        <tbody>
+          <tr><td>core, scoring, ci</td><td>python</td><td><code>@hakiriagent</code></td></tr>
+          <tr><td>ingest-rs, mempool</td><td>rust</td><td><code>@0xnova</code></td></tr>
+          <tr><td>classify, heuristics</td><td>python</td><td><code>@mikrohash</code></td></tr>
+          <tr><td>decode, output</td><td>python</td><td><code>@luka</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>why polyglot</h3>
+      <p>mev forensics is bottlenecked by mempool latency. python is fast enough for classification and scoring (a block is at most a few hundred logs) but a poor fit for a high-frequency websocket loop. rust handles the hot path; python handles the analysis. they meet at the <code class="inline">Event</code> boundary.</p>
+    </section>
+
+    <section id="pipeline">
+      <h2>pipeline layers</h2>
+
+      <h3>ingest</h3>
+      <p>two sources feed the pipeline:</p>
+      <ol class="list">
+        <li><strong>mempool</strong> (pre-inclusion). a websocket subscription to pending transactions. used to detect bundles before they land.</li>
+        <li><strong>finalized blocks</strong> (post-inclusion). either <code class="inline">eth_getLogs</code> (cheap, partial) or <code class="inline">debug_traceBlockByNumber</code> / <code class="inline">trace_block</code> (rich, expensive).</li>
+      </ol>
+      <p>the live ingest path runs in <code class="inline">ingest-rs/</code>. python has stubs at <code class="inline">src/hakiri/ingest/{mempool,builder,trace}.py</code> so the rest of the pipeline can be exercised without a node.</p>
+
+      <h3>decode</h3>
+      <p>receipts and logs are converted into <code class="inline">SwapTx</code> records. supported topics:</p>
+      <ul class="list">
+        <li>uniswap v2 <code class="inline">Swap(address,uint256,uint256,uint256,uint256,address)</code></li>
+        <li>uniswap v3 <code class="inline">Swap(address,address,int256,int256,uint160,uint128,int24)</code></li>
+      </ul>
+      <p>balancer v2 and curve are stubs at this stage.</p>
+
+      <h3>classify</h3>
+      <p>pure functions over <code class="inline">SwapTx</code> lists ordered by <code class="inline">tx_index</code>. each rule has a numbered id; ids appear in <code class="inline">docs/heuristics.md</code> and on the event itself via <code class="inline">event.notes</code>.</p>
+
+      <h3>score</h3>
+      <p>rule-based confidence in <code class="inline">[0.0, 0.95]</code>. capped on purpose. the breakdown is returned to the caller so every confidence value is fully traceable.</p>
+
+      <h3>ai filter</h3>
+      <p>optional. only used when <code class="inline">ANTHROPIC_API_KEY</code> is set. the filter reviews edge-case events and returns a minor adjustment, never an upgrade beyond the cap. when disabled, the rule-based score is final.</p>
+
+      <h3>sinks</h3>
+      <p>three sinks ship in 0.1:</p>
+      <ul class="list">
+        <li><code class="inline">stdout</code> — rich-formatted terminal output</li>
+        <li><code class="inline">jsonl</code> — append-only file at the configured path</li>
+        <li><code class="inline">webhook</code> — POST to an arbitrary url, failures swallowed</li>
+      </ul>
+      <p><code class="inline">all</code> runs every configured sink. add your own by implementing an <code class="inline">emit</code> method that takes <code class="inline">(event, score)</code>.</p>
+    </section>
+
+    <section id="glossary">
+      <h2>glossary</h2>
+      <p>domain terms used throughout hakiri.</p>
+      <dl class="glossary">
+        <dt>backrun</dt>
+        <dd>an arbitrage transaction placed immediately after a known price-moving transaction.</dd>
+
+        <dt>builder</dt>
+        <dd>the entity that constructs a block. on ethereum mainnet under proposer-builder separation, the proposer (validator) outsources block-building to one of a small set of public builders.</dd>
+
+        <dt>bundle</dt>
+        <dd>an ordered group of transactions submitted together. searchers pay builders to include their bundle at a specific position.</dd>
+
+        <dt>coinbase transfer</dt>
+        <dd>an in-execution transfer of eth to <code class="inline">block.coinbase</code>. searchers use this to pay the builder for inclusion priority. presence and size are the strongest single signal that a transaction is part of an mev bundle.</dd>
+
+        <dt>confidence cap</dt>
+        <dd>hakiri scores never exceed <code class="inline">0.95</code>. a detector, not an oracle.</dd>
+
+        <dt>flashbots relay</dt>
+        <dd>a public mev-boost relay forwarding builder bids to validators. one of several relays hakiri pulls payload data from.</dd>
+
+        <dt>jit (just-in-time liquidity)</dt>
+        <dd>adding liquidity to a pool, capturing fees from one specific incoming swap, and removing the liquidity in the same block.</dd>
+
+        <dt>mempool</dt>
+        <dd>the pool of transactions broadcast but not yet included. hakiri reads it to detect bundles before they land.</dd>
+
+        <dt>pbs (proposer-builder separation)</dt>
+        <dd>the post-merge ethereum architecture where validators receive bids from builders and choose the highest-paying block.</dd>
+
+        <dt>relay</dt>
+        <dd>a service relaying bids between builders and validators. flashbots, ultrasound, and titan are the most-used public relays.</dd>
+
+        <dt>sandwich</dt>
+        <dd>a front-run + back-run pair surrounding a victim swap on the same pool. the searcher buys before, sells after, captures the spread the victim creates.</dd>
+
+        <dt>searcher</dt>
+        <dd>a bot operator submitting bundles. mev-boost separates searchers from validators.</dd>
+
+        <dt>tx_index</dt>
+        <dd>the position of a transaction within its block. ordering matters for bundle reconstruction.</dd>
+
+        <dt>verdict</dt>
+        <dd>hakiri's human-readable label for a scored event: <code class="inline">confirmed</code> (≥0.85), <code class="inline">likely</code> (≥0.65), <code class="inline">suspected</code> (≥0.40), <code class="inline">noise</code> (&lt;0.40).</dd>
+      </dl>
+    </section>
+
+    <section id="roadmap">
+      <h2>roadmap</h2>
+      <table>
+        <thead><tr><th>version</th><th>scope</th><th class="center">status</th></tr></thead>
+        <tbody>
+          <tr><td>v0.1</td><td>sandwich + backrun rules. uniswap v2/v3 decode. demo + cli.</td><td class="center">shipped</td></tr>
+          <tr><td>v0.2</td><td>rust ingest wired via pyo3. jit + atomic arb rules. fixture replay.</td><td class="center">now</td></tr>
+          <tr><td>v0.3</td><td>liquidation + oracle rules. balancer + curve. base + arbitrum support.</td><td class="center">planned</td></tr>
+          <tr><td>v0.4</td><td>per-searcher leaderboard. per-builder coinbase share. weekly digest.</td><td class="center">planned</td></tr>
+          <tr><td>v0.5</td><td>reth <code>mev</code> namespace integration. low-latency local node mode.</td><td class="center">planned</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="contributing">
+      <h2>contributing</h2>
+      <p>short version: ship code that passes ci, write a clear pr description, no llm-generated readmes.</p>
+      <p>new searchers and builders are the easiest path in. open a PR against <code class="inline">src/hakiri/enrich/builder.py</code> or <code class="inline">src/hakiri/enrich/searcher.py</code> with on-chain evidence in the description.</p>
+      <p>full guidelines: <a href="https://github.com/hakiriagent/hakiri/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer">CONTRIBUTING.md</a>.</p>
+    </section>
+
+    <div class="footer">
+      <span>hakiri // ethereum mev forensics</span>
+      <span><a href="https://github.com/hakiriagent/hakiri" target="_blank" rel="noreferrer">github</a></span>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // active toc highlighting
+  const links = document.querySelectorAll('.toc a');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const linkFor = id => document.querySelector(`.toc a[href="#${id}"]`);
+
+  const tocIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = linkFor(e.target.id);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(s => tocIo.observe(s));
+
+  // section reveal on scroll
+  const revealIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in-view');
+        revealIo.unobserve(e.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+
+  sections.forEach(s => revealIo.observe(s));
+</script>
+
+</body>
+</html>

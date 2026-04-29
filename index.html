@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAKIRI</title>
+  <style>
+    :root {
+      --bg: #020204;
+      --text: #eaf2ff;
+      --glow: #9fc4ff;
+      --glow-strong: #cfe1ff;
+      --glow-soft: rgba(150, 190, 255, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    .hero {
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(90, 120, 180, 0.10), transparent 26%),
+        linear-gradient(180deg, #030305 0%, #000 100%);
+    }
+
+    /* drifting starfield */
+    .starfield {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.55;
+    }
+    .starfield span {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 4px rgba(200, 220, 255, 0.7);
+      animation: twinkle var(--dur, 4s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+      opacity: 0;
+    }
+
+    .brand {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      transform: translateY(-2vh);
+      animation: brandIn 1.4s ease-out 0.15s both;
+    }
+
+    .title {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(56px, 9vw, 132px);
+      font-weight: 200;
+      letter-spacing: 0.52em;
+      padding-left: 0.52em;
+      line-height: 1;
+      text-shadow:
+        0 0 12px rgba(205, 225, 255, 0.50),
+        0 0 28px rgba(100, 155, 255, 0.30);
+      animation: textBreath 4.8s ease-in-out infinite;
+    }
+
+    .tagline {
+      margin: 0;
+      font-size: clamp(11px, 0.95vw, 13px);
+      font-weight: 400;
+      letter-spacing: 0.32em;
+      text-transform: lowercase;
+      color: rgba(205, 220, 245, 0.55);
+      animation: fadeUp 1.4s ease-out 0.6s both;
+    }
+
+    .links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: lowercase;
+      animation: fadeUp 1.4s ease-out 0.85s both;
+    }
+    .links a {
+      color: rgba(205, 220, 245, 0.62);
+      text-decoration: none;
+      position: relative;
+      padding: 4px 0;
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.3s ease, filter 0.3s ease;
+    }
+    .links a.text::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 0;
+      height: 1px;
+      background: var(--glow);
+      box-shadow: 0 0 8px var(--glow);
+      transition: width 0.35s ease;
+    }
+    .links a:hover { color: #fff; }
+    .links a.text:hover::after { width: 100%; }
+    .links a.icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      fill: currentColor;
+      transition: filter 0.3s ease;
+    }
+    .links a.icon:hover svg {
+      filter: drop-shadow(0 0 6px var(--glow));
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 0.36em;
+      text-transform: lowercase;
+      color: rgba(180, 195, 220, 0.32);
+      animation: fadeUp 1.6s ease-out 1.05s both;
+    }
+
+    /* very rare flare across the screen */
+    .micro-flare {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at 50% 42%, rgba(190, 215, 255, 0.22), transparent 22%);
+      animation: rareFlicker 11s infinite;
+    }
+
+    @keyframes brandIn {
+      0%   { opacity: 0; transform: translateY(-1vh) scale(0.96); }
+      100% { opacity: 1; transform: translateY(-2vh) scale(1); }
+    }
+
+    @keyframes textBreath {
+      0%, 100% {
+        opacity: 0.86;
+        text-shadow: 0 0 7px rgba(205, 225, 255, 0.34), 0 0 16px rgba(100, 155, 255, 0.20);
+      }
+      50% {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(225, 238, 255, 0.52), 0 0 24px rgba(110, 165, 255, 0.34);
+      }
+    }
+
+    @keyframes fadeUp {
+      0%   { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50%      { opacity: 0.85; }
+    }
+
+    @keyframes rareFlicker {
+      0%, 78%, 100% { opacity: 0; }
+      79% { opacity: 0.36; }
+      80% { opacity: 0.06; }
+      81% { opacity: 0.22; }
+      82% { opacity: 0; }
+    }
+
+    @media (max-width: 700px) {
+      .brand { gap: 24px; }
+      .title { letter-spacing: 0.36em; padding-left: 0.36em; }
+      .links { gap: 20px; font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .brand, .tagline, .links, .footer,
+      .title, .micro-flare, .starfield span {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="hero" aria-label="HAKIRI">
+    <div class="starfield" aria-hidden="true"></div>
+    <div class="micro-flare" aria-hidden="true"></div>
+    <section class="brand">
+      <h1 class="title">HAKIRI</h1>
+      <p class="tagline">shows what got taken from you in the dark</p>
+      <nav class="links" aria-label="primary">
+        <a class="icon" href="https://github.com/hakiriagent/hakiri" target="_blank" rel="noreferrer" aria-label="github">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.01-.02-1.98-3.2.69-3.87-1.54-3.87-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.17.91-.25 1.89-.38 2.86-.39.97.01 1.95.14 2.86.39 2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.08 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56C20.71 21.39 24 17.08 24 12 24 5.65 18.85.5 12 .5Z"/></svg>
+        </a>
+        <a class="icon" href="#" target="_blank" rel="noreferrer" aria-label="x / twitter">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2H21l-6.52 7.45L22 22h-6.79l-4.74-6.2L4.99 22H2.23l6.97-7.96L2 2h6.91l4.29 5.67L18.244 2Zm-1.19 18h1.83L7.04 4H5.1l11.95 16Z"/></svg>
+        </a>
+        <a class="text" href="docs.html">docs</a>
+      </nav>
+    </section>
+    <div class="footer">hakiri // ethereum mev forensics</div>
+  </main>
+
+  <script>
+    // tiny drifting starfield
+    (() => {
+      const field = document.querySelector('.starfield');
+      const count = 36;
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement('span');
+        s.style.top  = Math.random() * 100 + '%';
+        s.style.left = Math.random() * 100 + '%';
+        s.style.setProperty('--dur', (3 + Math.random() * 5).toFixed(2) + 's');
+        s.style.setProperty('--delay', (Math.random() * 6).toFixed(2) + 's');
+        s.style.opacity = 0;
+        // randomize size a touch
+        const sz = 1 + Math.random() * 1.6;
+        s.style.width = s.style.height = sz.toFixed(1) + 'px';
+        field.appendChild(s);
+      }
+    })();
+  </script>
+</body>
+</html>
