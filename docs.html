@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HAKIRI — docs</title>
+  <title>HIKARA — docs</title>
   <link rel="icon" type="image/png" href="/assets/hakiri-figure.png" />
   <link rel="apple-touch-icon" href="/assets/hakiri-figure.png" />
   <style>
@@ -392,7 +392,7 @@
       <span class="star-ray v"></span>
       <span class="star-core"></span>
     </span>
-    <span class="brand-name">HAKIRI</span>
+    <span class="brand-name">HIKARA</span>
   </a>
   <nav class="topnav" aria-label="top">
     <a href="index.html">home</a>
@@ -434,7 +434,7 @@
 
     <section id="overview">
       <h2>overview</h2>
-      <p>hakiri watches every slot on solana mainnet, decodes the swap instructions, and reconstructs jito bundles. it classifies the events — sandwich, jit, backrun, liquidation, atomic arb — attributes leader validators and known searchers, and emits a verdict per event with a confidence in <code class="inline">[0.0, 0.95]</code>.</p>
+      <p>hikara watches every slot on solana mainnet, decodes the swap instructions, and reconstructs jito bundles. it classifies the events — sandwich, jit, backrun, liquidation, atomic arb — attributes leader validators and known searchers, and emits a verdict per event with a confidence in <code class="inline">[0.0, 0.95]</code>.</p>
       <p>detector, not oracle. read-only by design. no wallet, no signer, no executor, no trading. anyone forking to build a sniper does so in their own repo.</p>
     </section>
 
@@ -548,8 +548,8 @@
     <section id="quickstart">
       <h2>quickstart</h2>
       <p>requires python 3.9+ and rust stable.</p>
-<pre>git clone https://github.com/hakiriagent/hakiri.git
-cd hakiri
+<pre>git clone https://github.com/hakiriagent/hakiri.git hikara
+cd hikara
 
 # install python package + dev deps
 make install
@@ -558,27 +558,27 @@ make install
 cd ingest-rs && cargo build --release && cd ..
 
 # run an offline demo (zero network)
-hakiri demo investigate
+hikara demo investigate
 
 # run the live scanner against your rpc
 cp .env.example .env
-$EDITOR .env   # set HAKIRI_RPC_URL (helius / triton) or HAKIRI_SHRED_URL (jito)
-hakiri scan</pre>
-      <p>no rpc? <code class="inline">hakiri demo scan</code> shows the full pipeline against synthetic fixtures.</p>
+$EDITOR .env   # set HIKARA_RPC_URL (helius / triton) or HIKARA_SHRED_URL (jito)
+hikara scan</pre>
+      <p>no rpc? <code class="inline">hikara demo scan</code> shows the full pipeline against synthetic fixtures.</p>
     </section>
 
     <section id="cli">
       <h2>cli reference</h2>
-<pre>hakiri version                    # version + active config
-hakiri scan                       # live shred + slot scan
-hakiri scan --once                # one slot then exit (smoke test)
-hakiri investigate &lt;sig|slot&gt;     # walk the pipeline on a specific target
+<pre>hikara version                    # version + active config
+hikara scan                       # live shred + slot scan
+hikara scan --once                # one slot then exit (smoke test)
+hikara investigate &lt;sig|slot&gt;     # walk the pipeline on a specific target
 
-hakiri demo scan                  # canned scan against a synthetic slot
-hakiri demo investigate           # full pipeline trace, prints every step
-hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
+hikara demo scan                  # canned scan against a synthetic slot
+hikara demo investigate           # full pipeline trace, prints every step
+hikara demo replay &lt;id&gt;           # replay a recorded fixture</pre>
 
-      <h3>example output — <code>hakiri demo investigate</code></h3>
+      <h3>example output — <code>hikara demo investigate</code></h3>
 <pre>─────────────────── step 1. decoded swaps ────────────────────
   slot 285000000 idx 0  signer 4Nd1m7t...  pool 8sLbNZoA... (raydium)  in 8.00 SOL   out 1320.40 USDC
   slot 285000000 idx 1  signer 9XKpMRkB...  pool 8sLbNZoA... (raydium)  in 0.50 SOL   out 82.10 USDC
@@ -672,7 +672,7 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
 
     <section id="glossary">
       <h2>glossary</h2>
-      <p>domain terms used throughout hakiri.</p>
+      <p>domain terms used throughout hikara.</p>
       <dl class="glossary">
         <dt>backrun</dt>
         <dd>an arbitrage transaction placed immediately after a known price-moving transaction in the same slot.</dd>
@@ -684,7 +684,7 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
         <dd>an ordered group of up to 5 transactions submitted via the jito relay. atomic by construction — either all txs land or none. searchers pay the leader a tip via one of the well-known jito tip accounts.</dd>
 
         <dt>confidence cap</dt>
-        <dd>hakiri scores never exceed <code class="inline">0.95</code>. a detector, not an oracle.</dd>
+        <dd>hikara scores never exceed <code class="inline">0.95</code>. a detector, not an oracle.</dd>
 
         <dt>jito relay</dt>
         <dd>public infrastructure that forwards searcher bundles to jito-solana validators. the relay enforces atomicity, dedupes, and exposes the shredstream feed.</dd>
@@ -705,7 +705,7 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
         <dd>a bot operator submitting bundles to the jito relay. distinct from the validator; pays for inclusion via tips.</dd>
 
         <dt>shredstream</dt>
-        <dd>jito's low-latency shred feed. partial slot data delivered as it's produced, before finalization. hakiri reads it to detect bundles in-flight.</dd>
+        <dd>jito's low-latency shred feed. partial slot data delivered as it's produced, before finalization. hikara reads it to detect bundles in-flight.</dd>
 
         <dt>slot</dt>
         <dd>solana's notion of a block. lasts ~400ms. a slot can contain hundreds of transactions; ordering inside the slot is set by the leader.</dd>
@@ -714,7 +714,7 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
         <dd>the position of a transaction within its slot. ordering matters for bundle reconstruction and sandwich detection.</dd>
 
         <dt>verdict</dt>
-        <dd>hakiri's human-readable label for a scored event: <code class="inline">confirmed</code> (≥0.85), <code class="inline">likely</code> (≥0.65), <code class="inline">suspected</code> (≥0.40), <code class="inline">noise</code> (&lt;0.40).</dd>
+        <dd>hikara's human-readable label for a scored event: <code class="inline">confirmed</code> (≥0.85), <code class="inline">likely</code> (≥0.65), <code class="inline">suspected</code> (≥0.40), <code class="inline">noise</code> (&lt;0.40).</dd>
       </dl>
     </section>
 
@@ -740,7 +740,7 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
     </section>
 
     <div class="footer">
-      <span>hakiri // solana mev forensics</span>
+      <span>hikara // solana mev forensics</span>
       <span><a href="https://github.com/hakiriagent/hakiri" target="_blank" rel="noreferrer">github</a></span>
     </div>
 
