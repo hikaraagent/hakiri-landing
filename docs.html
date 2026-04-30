@@ -421,7 +421,7 @@
 
   <main class="content">
 
-    <p class="lede">ethereum mev forensics agent</p>
+    <p class="lede">solana mev forensics agent</p>
     <h1 class="page-title">docs</h1>
 
     <div class="badges">
@@ -429,31 +429,31 @@
       <span class="badge">python 3.9+</span>
       <span class="badge">rust stable</span>
       <span class="badge">mit</span>
-      <span class="badge">ethereum mainnet</span>
+      <span class="badge">solana mainnet</span>
     </div>
 
     <section id="overview">
       <h2>overview</h2>
-      <p>hakiri watches every block on ethereum mainnet, decodes the swap logs, and reconstructs bundles. it classifies the events — sandwich, jit, backrun, liquidation, atomic arb — attributes builders and known searchers, and emits a verdict per event with a confidence in <code class="inline">[0.0, 0.95]</code>.</p>
+      <p>hakiri watches every slot on solana mainnet, decodes the swap instructions, and reconstructs jito bundles. it classifies the events — sandwich, jit, backrun, liquidation, atomic arb — attributes leader validators and known searchers, and emits a verdict per event with a confidence in <code class="inline">[0.0, 0.95]</code>.</p>
       <p>detector, not oracle. read-only by design. no wallet, no signer, no executor, no trading. anyone forking to build a sniper does so in their own repo.</p>
     </section>
 
     <section id="how-it-works">
       <h2>how it works</h2>
       <p>a pipeline of small, independent layers. you can swap any layer without touching the others. the contract between layers is the <code class="inline">Event</code> dataclass in <code class="inline">src/hakiri/core/types.py</code>.</p>
-<pre>   pending mempool                  finalized blocks
+<pre>   shredstream feed                 finalized slots
         │                                  │
         ▼                                  ▼
   ┌──────────────┐                  ┌──────────────┐
-  │ ingest-rs    │                  │ trace_block  │
-  │ ws subscribe │                  │ debug_trace  │
+  │ ingest-rs    │                  │ getBlock     │
+  │ jito shreds  │                  │ getTransac.  │
   └──────┬───────┘                  └──────┬───────┘
          │                                 │
          └──────────────┬──────────────────┘
                         ▼
-                ┌───────────────┐
-                │ decode  v2/v3 │   uniswap, sushi, balancer pools
-                └──────┬────────┘
+                ┌──────────────┐
+                │ decode  amm  │   raydium · orca · meteora · phoenix
+                └──────┬───────┘
                        ▼
                 ┌──────────────┐
                 │ classify     │   SAND-01, BACK-01, JIT-01, ARB-01
@@ -477,16 +477,17 @@
       <table>
         <thead><tr><th>target</th><th class="center">status</th></tr></thead>
         <tbody>
-          <tr><td>ethereum mainnet</td><td class="center">primary</td></tr>
-          <tr><td>uniswap v2 swap logs</td><td class="center">primary</td></tr>
-          <tr><td>uniswap v3 swap logs</td><td class="center">primary</td></tr>
-          <tr><td>sushiswap v2 (alias)</td><td class="center">primary</td></tr>
-          <tr><td>flashbots relay</td><td class="center">primary</td></tr>
-          <tr><td>ultrasound relay</td><td class="center">primary</td></tr>
-          <tr><td>balancer v2 vault</td><td class="center">low coverage</td></tr>
-          <tr><td>curve pools</td><td class="center">low coverage</td></tr>
-          <tr><td>L2: base, arbitrum</td><td class="center">planned</td></tr>
-          <tr><td>reth <code>mev</code> namespace</td><td class="center">planned</td></tr>
+          <tr><td>solana mainnet</td><td class="center">primary</td></tr>
+          <tr><td>raydium amm v4</td><td class="center">primary</td></tr>
+          <tr><td>raydium clmm</td><td class="center">primary</td></tr>
+          <tr><td>orca whirlpools</td><td class="center">primary</td></tr>
+          <tr><td>jito bundle stream</td><td class="center">primary</td></tr>
+          <tr><td>jito tip account decode</td><td class="center">primary</td></tr>
+          <tr><td>meteora dlmm</td><td class="center">low coverage</td></tr>
+          <tr><td>phoenix clob</td><td class="center">low coverage</td></tr>
+          <tr><td>lifinity v2</td><td class="center">low coverage</td></tr>
+          <tr><td>drift / kamino liquidations</td><td class="center">planned</td></tr>
+          <tr><td>pyth oracle-update sandwich</td><td class="center">planned</td></tr>
         </tbody>
       </table>
     </section>
@@ -500,10 +501,10 @@
         <tbody>
           <tr><td><code>SAND-01</code></td><td>classic sandwich: front + victim + back same pool, opposite directions</td><td class="center">v0.1</td></tr>
           <tr><td><code>BACK-01</code></td><td>one-step backrun arb against a user swap</td><td class="center">v0.1</td></tr>
-          <tr><td><code>JIT-01</code></td><td>just-in-time liquidity add+remove around a victim swap</td><td class="center">v0.2</td></tr>
+          <tr><td><code>JIT-01</code></td><td>just-in-time concentrated liquidity around a victim swap</td><td class="center">v0.2</td></tr>
           <tr><td><code>ARB-01</code></td><td>atomic multi-hop arb across 3+ pools in a single tx</td><td class="center">v0.2</td></tr>
-          <tr><td><code>LIQ-01</code></td><td>aave/compound liquidation w/ priority manipulation</td><td class="center">v0.3</td></tr>
-          <tr><td><code>ORACLE-01</code></td><td>sandwich-style prep around an oracle update tx</td><td class="center">v0.3</td></tr>
+          <tr><td><code>LIQ-01</code></td><td>drift / kamino / marginfi liquidation w/ priority manipulation</td><td class="center">v0.3</td></tr>
+          <tr><td><code>ORACLE-01</code></td><td>sandwich-style prep around a pyth / switchboard update</td><td class="center">v0.3</td></tr>
         </tbody>
       </table>
 
@@ -511,34 +512,34 @@
       <p>three swaps on the same pool: a front-run by a searcher, a victim swap, a back-run by the same searcher. front and back run in opposite directions.</p>
       <ul class="list">
         <li><code class="inline">front.pool == victim.pool == back.pool</code></li>
-        <li><code class="inline">front.sender == back.sender != victim.sender</code></li>
+        <li><code class="inline">front.signer == back.signer != victim.signer</code></li>
         <li><code class="inline">front.token_in == victim.token_in</code> and <code class="inline">front.token_out == victim.token_out</code></li>
         <li><code class="inline">back.token_in == victim.token_out</code> and <code class="inline">back.token_out == victim.token_in</code></li>
-        <li><code class="inline">front.tx_index &lt; victim.tx_index &lt; back.tx_index</code></li>
+        <li><code class="inline">front.tx_index &lt; victim.tx_index &lt; back.tx_index</code> (within the same slot)</li>
       </ul>
-      <p>scoring: base <code class="inline">0.70</code>. coinbase-transfer raises by <code class="inline">+0.10</code>. presence of a victim record raises by <code class="inline">+0.05</code>.</p>
+      <p>scoring: base <code class="inline">0.70</code>. jito-tip transfer raises by <code class="inline">+0.10</code>. presence of a victim record raises by <code class="inline">+0.05</code>.</p>
 
       <h3>BACK-01 — one-step backrun</h3>
-      <p>two consecutive swaps on the same pool by different senders, same direction. the second swap is treated as an arb candidate against the first.</p>
+      <p>two consecutive swaps on the same pool by different signers, same direction. the second swap is treated as an arb candidate against the first.</p>
       <ul class="list">
         <li><code class="inline">a.pool == b.pool</code></li>
-        <li><code class="inline">a.sender != b.sender</code></li>
+        <li><code class="inline">a.signer != b.signer</code></li>
         <li><code class="inline">a.token_in == b.token_in</code> and <code class="inline">a.token_out == b.token_out</code></li>
         <li><code class="inline">a.tx_index + 1 == b.tx_index</code></li>
       </ul>
-      <p>scoring: base <code class="inline">0.50</code>. coinbase-transfer raises by <code class="inline">+0.10</code>.</p>
+      <p>scoring: base <code class="inline">0.50</code>. jito-tip transfer raises by <code class="inline">+0.10</code>.</p>
 
       <h3>JIT-01 — just-in-time liquidity</h3>
-      <p>uniswap v3 only. a position is opened (mint) and closed (burn) in the same block, surrounding a victim swap. the searcher captures fees from the victim and rebalances out before the block ends.</p>
+      <p>orca whirlpools and meteora dlmm. a concentrated position is opened (open_position + increase_liquidity) and closed (decrease_liquidity + close_position) within the same slot, surrounding a victim swap. the searcher captures fees from the victim and rebalances out before the slot ends.</p>
 
       <h3>ARB-01 — atomic multi-hop arb</h3>
-      <p>a single transaction touches three or more pools and ends with a profit denominated in the input token. typical on stable triangles (<code class="inline">weth → usdc → wbtc → weth</code>).</p>
+      <p>a single transaction touches three or more pools across raydium / orca / meteora / phoenix and ends with a profit denominated in the input mint. typical on stable triangles (<code class="inline">SOL → USDC → USDT → SOL</code>).</p>
 
       <h3>LIQ-01 — liquidation with priority manipulation</h3>
-      <p>aave or compound liquidation where the searcher front-runs the <code class="inline">liquidationCall</code> with a price-impact swap that pushes the victim past threshold.</p>
+      <p>drift, kamino, marginfi, or solend liquidation where the searcher front-runs the liquidate instruction with a price-impact swap that pushes the victim past threshold.</p>
 
       <h3>ORACLE-01 — oracle-update sandwich</h3>
-      <p>same shape as SAND-01, but the victim is an oracle-update transaction. the searcher positions before the update lands and exits after.</p>
+      <p>same shape as SAND-01, but the victim is a pyth or switchboard price-update transaction. the searcher positions before the update lands and exits after.</p>
 
       <h3>why each rule has a numbered id</h3>
       <p>users get a verdict; auditors need a reason. quoting a rule id in a forum post or a postmortem is more useful than re-explaining the heuristic each time.</p>
@@ -561,7 +562,7 @@ hakiri demo investigate
 
 # run the live scanner against your rpc
 cp .env.example .env
-$EDITOR .env   # set HAKIRI_WS_URL or HAKIRI_HTTP_URL
+$EDITOR .env   # set HAKIRI_RPC_URL (helius / triton) or HAKIRI_SHRED_URL (jito)
 hakiri scan</pre>
       <p>no rpc? <code class="inline">hakiri demo scan</code> shows the full pipeline against synthetic fixtures.</p>
     </section>
@@ -569,29 +570,29 @@ hakiri scan</pre>
     <section id="cli">
       <h2>cli reference</h2>
 <pre>hakiri version                    # version + active config
-hakiri scan                       # live mempool + block scan
-hakiri scan --once                # one block then exit (smoke test)
-hakiri investigate &lt;tx|block&gt;     # walk the pipeline on a specific target
+hakiri scan                       # live shred + slot scan
+hakiri scan --once                # one slot then exit (smoke test)
+hakiri investigate &lt;sig|slot&gt;     # walk the pipeline on a specific target
 
-hakiri demo scan                  # canned scan against a synthetic block
+hakiri demo scan                  # canned scan against a synthetic slot
 hakiri demo investigate           # full pipeline trace, prints every step
 hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
 
       <h3>example output — <code>hakiri demo investigate</code></h3>
 <pre>─────────────────── step 1. decoded swaps ────────────────────
-  block 21000000 idx 0  sender 0xa69BabE...  pool 0x88e6A0c2...  in 8000000000000000000  out 24000000000
-  block 21000000 idx 1  sender 0xCAFE8888...  pool 0x88e6A0c2...  in 2000000000000000000  out 5950000000
-  block 21000000 idx 2  sender 0xa69BabE...  pool 0x88e6A0c2...  in 24500000000  out 8300000000000000
+  slot 285000000 idx 0  signer 4Nd1m7t...  pool 8sLbNZoA... (raydium)  in 8.00 SOL   out 1320.40 USDC
+  slot 285000000 idx 1  signer 9XKpMRkB...  pool 8sLbNZoA... (raydium)  in 0.50 SOL   out 82.10 USDC
+  slot 285000000 idx 2  signer 4Nd1m7t...  pool 8sLbNZoA... (raydium)  in 1340.00 USDC out 8.07 SOL
 
 ─────────────────── step 2. classifier rules ─────────────────
   rules fired: ['SAND-01']
-  block verdict: likely
+  slot verdict: likely
   events found:  1
 
 ─────────────────── step 3. score per event ─────────────────
-  sandwich block 21000000
+  sandwich slot 285000000
     base[sandwich]=0.70
-    coinbase_transfer&gt;0:+0.10
+    jito_tip&gt;0:+0.10
     bundle.txs&gt;=2:+0.05
     victims_present:+0.05
     -&gt; verdict=confirmed conf=0.900
@@ -603,15 +604,15 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
 <pre>hakiri/
 ├── src/hakiri/                    python package
 │   ├── core/                      types · classify · score
-│   ├── decode/                    uniswap v2/v3 + router labels
-│   ├── enrich/                    builder · searcher · coinbase transfer
-│   ├── ingest/                    rpc + mempool + trace stubs (rust later)
+│   ├── decode/                    raydium · orca · meteora + program ids
+│   ├── enrich/                    leader · searcher · jito tip
+│   ├── ingest/                    rpc + shredstream + slot stubs (rust later)
 │   ├── output/                    stdout · jsonl · webhook
 │   ├── ai/                        optional rule reviewer
 │   ├── demo/                      offline scripted demos
 │   └── cli.py                     typer entrypoint
 ├── ingest-rs/                     low-level ingest crate (rust)
-│   └── src/ {mempool,bundle,trace}.rs
+│   └── src/ {shreds,bundle,slot}.rs
 ├── tests/                         pytest suite
 └── docs/                          architecture · heuristics · glossary</pre>
 
@@ -620,14 +621,14 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
         <thead><tr><th>zone</th><th>language</th><th>maintainer</th></tr></thead>
         <tbody>
           <tr><td>core, scoring, ci</td><td>python</td><td><code>@hakiriagent</code></td></tr>
-          <tr><td>ingest-rs, mempool</td><td>rust</td><td><code>@0xnova</code></td></tr>
+          <tr><td>ingest-rs, shredstream</td><td>rust</td><td><code>@0xnova</code></td></tr>
           <tr><td>classify, heuristics</td><td>python</td><td><code>@mikrohash</code></td></tr>
           <tr><td>decode, output</td><td>python</td><td><code>@luka</code></td></tr>
         </tbody>
       </table>
 
       <h3>why polyglot</h3>
-      <p>mev forensics is bottlenecked by mempool latency. python is fast enough for classification and scoring (a block is at most a few hundred logs) but a poor fit for a high-frequency websocket loop. rust handles the hot path; python handles the analysis. they meet at the <code class="inline">Event</code> boundary.</p>
+      <p>mev forensics on solana is bottlenecked by shred latency. python is fast enough for classification and scoring (a slot is at most a few hundred swaps) but a poor fit for a high-frequency shred-stream loop. rust handles the hot path; python handles the analysis. they meet at the <code class="inline">Event</code> boundary.</p>
     </section>
 
     <section id="pipeline">
@@ -636,18 +637,19 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
       <h3>ingest</h3>
       <p>two sources feed the pipeline:</p>
       <ol class="list">
-        <li><strong>mempool</strong> (pre-inclusion). a websocket subscription to pending transactions. used to detect bundles before they land.</li>
-        <li><strong>finalized blocks</strong> (post-inclusion). either <code class="inline">eth_getLogs</code> (cheap, partial) or <code class="inline">debug_traceBlockByNumber</code> / <code class="inline">trace_block</code> (rich, expensive).</li>
+        <li><strong>shredstream</strong> (pre-finality). a jito shred-relay subscription. solana has no public mempool — shreds are the earliest signal you can get on a tx before its slot finalizes.</li>
+        <li><strong>finalized slots</strong> (post-finality). either <code class="inline">getBlock</code> (batched, full slot) or <code class="inline">getTransaction</code> (per-signature, deep instruction trace) over a helius / triton / quicknode rpc.</li>
       </ol>
-      <p>the live ingest path runs in <code class="inline">ingest-rs/</code>. python has stubs at <code class="inline">src/hakiri/ingest/{mempool,builder,trace}.py</code> so the rest of the pipeline can be exercised without a node.</p>
+      <p>the live ingest path runs in <code class="inline">ingest-rs/</code>. python has stubs at <code class="inline">src/hakiri/ingest/{shreds,leader,trace}.py</code> so the rest of the pipeline can be exercised without a node.</p>
 
       <h3>decode</h3>
-      <p>receipts and logs are converted into <code class="inline">SwapTx</code> records. supported topics:</p>
+      <p>instructions and inner-instructions are converted into <code class="inline">SwapTx</code> records via program-id dispatch. supported targets:</p>
       <ul class="list">
-        <li>uniswap v2 <code class="inline">Swap(address,uint256,uint256,uint256,uint256,address)</code></li>
-        <li>uniswap v3 <code class="inline">Swap(address,address,int256,int256,uint160,uint128,int24)</code></li>
+        <li>raydium amm v4 — <code class="inline">675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8</code> (Swap)</li>
+        <li>raydium clmm — <code class="inline">CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK</code> (SwapV2)</li>
+        <li>orca whirlpools — <code class="inline">whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc</code> (Swap)</li>
       </ul>
-      <p>balancer v2 and curve are stubs at this stage.</p>
+      <p>meteora dlmm and phoenix clob are stubs at this stage.</p>
 
       <h3>classify</h3>
       <p>pure functions over <code class="inline">SwapTx</code> lists ordered by <code class="inline">tx_index</code>. each rule has a numbered id; ids appear in <code class="inline">docs/heuristics.md</code> and on the event itself via <code class="inline">event.notes</code>.</p>
@@ -673,43 +675,43 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
       <p>domain terms used throughout hakiri.</p>
       <dl class="glossary">
         <dt>backrun</dt>
-        <dd>an arbitrage transaction placed immediately after a known price-moving transaction.</dd>
+        <dd>an arbitrage transaction placed immediately after a known price-moving transaction in the same slot.</dd>
 
-        <dt>builder</dt>
-        <dd>the entity that constructs a block. on ethereum mainnet under proposer-builder separation, the proposer (validator) outsources block-building to one of a small set of public builders.</dd>
+        <dt>block leader</dt>
+        <dd>the validator scheduled for the current slot. unlike ethereum, solana has no proposer-builder separation — the leader builds the block directly. with the jito-solana client, the leader exposes a bundle slot to searchers in exchange for a tip.</dd>
 
-        <dt>bundle</dt>
-        <dd>an ordered group of transactions submitted together. searchers pay builders to include their bundle at a specific position.</dd>
-
-        <dt>coinbase transfer</dt>
-        <dd>an in-execution transfer of eth to <code class="inline">block.coinbase</code>. searchers use this to pay the builder for inclusion priority. presence and size are the strongest single signal that a transaction is part of an mev bundle.</dd>
+        <dt>bundle (jito)</dt>
+        <dd>an ordered group of up to 5 transactions submitted via the jito relay. atomic by construction — either all txs land or none. searchers pay the leader a tip via one of the well-known jito tip accounts.</dd>
 
         <dt>confidence cap</dt>
         <dd>hakiri scores never exceed <code class="inline">0.95</code>. a detector, not an oracle.</dd>
 
-        <dt>flashbots relay</dt>
-        <dd>a public mev-boost relay forwarding builder bids to validators. one of several relays hakiri pulls payload data from.</dd>
+        <dt>jito relay</dt>
+        <dd>public infrastructure that forwards searcher bundles to jito-solana validators. the relay enforces atomicity, dedupes, and exposes the shredstream feed.</dd>
+
+        <dt>jito tip</dt>
+        <dd>a sol transfer to one of 8 well-known jito tip accounts. presence and size are the strongest single signal that a transaction is part of a jito bundle.</dd>
 
         <dt>jit (just-in-time liquidity)</dt>
-        <dd>adding liquidity to a pool, capturing fees from one specific incoming swap, and removing the liquidity in the same block.</dd>
+        <dd>opening a concentrated position, capturing fees from one specific incoming swap, and closing the position in the same slot. on solana, mostly seen on orca whirlpools and meteora dlmm.</dd>
 
-        <dt>mempool</dt>
-        <dd>the pool of transactions broadcast but not yet included. hakiri reads it to detect bundles before they land.</dd>
-
-        <dt>pbs (proposer-builder separation)</dt>
-        <dd>the post-merge ethereum architecture where validators receive bids from builders and choose the highest-paying block.</dd>
-
-        <dt>relay</dt>
-        <dd>a service relaying bids between builders and validators. flashbots, ultrasound, and titan are the most-used public relays.</dd>
+        <dt>priority fee</dt>
+        <dd>per-compute-unit fee paid in addition to the base fee. another lever searchers use for inclusion priority alongside (or instead of) jito tips.</dd>
 
         <dt>sandwich</dt>
         <dd>a front-run + back-run pair surrounding a victim swap on the same pool. the searcher buys before, sells after, captures the spread the victim creates.</dd>
 
         <dt>searcher</dt>
-        <dd>a bot operator submitting bundles. mev-boost separates searchers from validators.</dd>
+        <dd>a bot operator submitting bundles to the jito relay. distinct from the validator; pays for inclusion via tips.</dd>
+
+        <dt>shredstream</dt>
+        <dd>jito's low-latency shred feed. partial slot data delivered as it's produced, before finalization. hakiri reads it to detect bundles in-flight.</dd>
+
+        <dt>slot</dt>
+        <dd>solana's notion of a block. lasts ~400ms. a slot can contain hundreds of transactions; ordering inside the slot is set by the leader.</dd>
 
         <dt>tx_index</dt>
-        <dd>the position of a transaction within its block. ordering matters for bundle reconstruction.</dd>
+        <dd>the position of a transaction within its slot. ordering matters for bundle reconstruction and sandwich detection.</dd>
 
         <dt>verdict</dt>
         <dd>hakiri's human-readable label for a scored event: <code class="inline">confirmed</code> (≥0.85), <code class="inline">likely</code> (≥0.65), <code class="inline">suspected</code> (≥0.40), <code class="inline">noise</code> (&lt;0.40).</dd>
@@ -721,11 +723,11 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
       <table>
         <thead><tr><th>version</th><th>scope</th><th class="center">status</th></tr></thead>
         <tbody>
-          <tr><td>v0.1</td><td>sandwich + backrun rules. uniswap v2/v3 decode. demo + cli.</td><td class="center">shipped</td></tr>
+          <tr><td>v0.1</td><td>sandwich + backrun rules. raydium amm v4 + orca whirlpools decode. demo + cli.</td><td class="center">shipped</td></tr>
           <tr><td>v0.2</td><td>rust ingest wired via pyo3. jit + atomic arb rules. fixture replay.</td><td class="center">now</td></tr>
-          <tr><td>v0.3</td><td>liquidation + oracle rules. balancer + curve. base + arbitrum support.</td><td class="center">planned</td></tr>
-          <tr><td>v0.4</td><td>per-searcher leaderboard. per-builder coinbase share. weekly digest.</td><td class="center">planned</td></tr>
-          <tr><td>v0.5</td><td>reth <code>mev</code> namespace integration. low-latency local node mode.</td><td class="center">planned</td></tr>
+          <tr><td>v0.3</td><td>liquidation + oracle rules. meteora dlmm + phoenix clob. drift + kamino support.</td><td class="center">planned</td></tr>
+          <tr><td>v0.4</td><td>per-searcher leaderboard. per-leader tip share. weekly digest.</td><td class="center">planned</td></tr>
+          <tr><td>v0.5</td><td>jito shredstream integration. low-latency local rpc mode.</td><td class="center">planned</td></tr>
         </tbody>
       </table>
     </section>
@@ -733,12 +735,12 @@ hakiri demo replay &lt;id&gt;           # replay a recorded fixture</pre>
     <section id="contributing">
       <h2>contributing</h2>
       <p>short version: ship code that passes ci, write a clear pr description, no llm-generated readmes.</p>
-      <p>new searchers and builders are the easiest path in. open a PR against <code class="inline">src/hakiri/enrich/builder.py</code> or <code class="inline">src/hakiri/enrich/searcher.py</code> with on-chain evidence in the description.</p>
+      <p>new searchers and tip accounts are the easiest path in. open a PR against <code class="inline">src/hakiri/enrich/leader.py</code> or <code class="inline">src/hakiri/enrich/searcher.py</code> with on-chain evidence in the description.</p>
       <p>full guidelines: <a href="https://github.com/hakiriagent/hakiri/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer">CONTRIBUTING.md</a>.</p>
     </section>
 
     <div class="footer">
-      <span>hakiri // ethereum mev forensics</span>
+      <span>hakiri // solana mev forensics</span>
       <span><a href="https://github.com/hakiriagent/hakiri" target="_blank" rel="noreferrer">github</a></span>
     </div>
 
